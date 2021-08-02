@@ -1,0 +1,15 @@
+[package]
+name = "pi-sensor-bme280"
+version = "1.0.0"
+authors = ["FerrahWolfeh"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bme280 = "0.2.1"
+linux-embedded-hal = "0.3.0"
+chrono = "0.4"
+colored = "2"
+csv = "1.1"
+serde = "1.0"
