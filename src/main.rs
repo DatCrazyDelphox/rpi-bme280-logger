@@ -3,32 +3,16 @@ use chrono::prelude::*;
 use colored::*;
 use linux_embedded_hal::{Delay, I2cdev};
 use std::error::Error;
-use std::thread;
-use std::time;
-use termion::*;
+use std::{thread, time, process};
+use termion::{clear, cursor};
 
-
-fn main() -> Result<(), Box<dyn Error>> {
-
-    // First initialize the sensor and CSV writer
-
-    let mut wtr = csv::Writer::from_path("sensor.csv")?;
-
-    // Write CSV Header (also clears csv file if it exists)
-    wtr.write_record(&["Dia", "Hora", "Temperatura", "Humidade", "Pressão"])?;
-
-    // Clear screen
-    clear::All;
-
-
-
-
-    thread::spawn(|| {
+fn csvwriter() -> Result<(), Box<dyn Error>> {
         let mut bme280 = BME280::new_primary(I2cdev::new("/dev/i2c-1").unwrap(), Delay);
+        let mut wtr = csv::Writer::from_path("sensor.csv")?;
         bme280.init().unwrap();
+        wtr.write_record(&["Dia", "Hora", "Temperatura", "Humidade", "Pressão"])?;
         loop {
-
-            let measurements = bme280.measure().unwrap();
+        let measurements = bme280.measure().unwrap();
 
             let now = Local::now();
 
@@ -37,29 +21,24 @@ fn main() -> Result<(), Box<dyn Error>> {
             let humidity = format!("{:.2}", measurements.humidity);
             let temp = format!("{:.2}", measurements.temperature);
             let _press = format!("{:.2}", (measurements.pressure / 1000 as f32));
+            wtr.serialize((day.to_string(), time.to_string(), temp, humidity, _press))?;
+            wtr.flush()?;
+            thread::sleep(time::Duration::from_secs(60));
+        }
+}
 
-            println!("{} - {}", day.white().bold(), time.white().bold());
-            println!(
-                "Temperatura = {}{}",
-                temp.bright_green().bold(),
-                "°C".bright_green().bold()
-            );
-            println!(
-                "Humidade = {}{}",
-                humidity.bright_green().bold(),
-                "%".bright_green().bold()
-            );
-            println!(
-                "Pressão = {} {}",
-                _press.bright_green().bold(),
-                "KPa".bright_green().bold()
-            );
+fn main() {
+
+    // First initialize the sensor and CSV writer
+    let mut bme280 = BME280::new_primary(I2cdev::new("/dev/i2c-1").unwrap(), Delay);
+    bme280.init().unwrap();
+    thread::spawn(|| {
+            if let Err(err) = csvwriter() {
+        println!("{}", err);
+        process::exit(1);
         }
     });
-
-
-
-    // Begin infinitely writing sensor data to a CSV
+    print!("{}{}", clear::All, cursor::Goto(1, 1));
     loop {
         let measurements = bme280.measure().unwrap();
 
@@ -87,9 +66,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             _press.bright_green().bold(),
             "KPa".bright_green().bold()
         );
-        wtr.serialize((day.to_string(), time.to_string(), temp, humidity, _press))?;
-        wtr.flush()?;
-        thread::sleep(time::Duration::from_secs(60));
-        clear::All;
-    }
+        thread::sleep(time::Duration::from_secs(1));
+        print!("{}", clear::All);
+    };
 }
