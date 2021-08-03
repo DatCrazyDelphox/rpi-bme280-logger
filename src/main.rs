@@ -5,10 +5,8 @@ use linux_embedded_hal::{Delay, I2cdev};
 use std::error::Error;
 use std::thread;
 use std::time;
+use termion::clear;
 
-fn clear_scrn() {
-    print!("\x1B[2J\x1B[1;1H");
-}
 
 fn main() -> Result<(), Box<dyn Error>> {
     // First initialize the sensor and CSV writer
@@ -21,7 +19,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     wtr.write_record(&["Dia", "Hora", "Temperatura", "Humidade", "Pressão"])?;
 
     // Clear screen
-    clear_scrn();
+    clear::All();
+
+
 
     // Begin infinitely writing sensor data to a CSV
     loop {
@@ -54,6 +54,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         wtr.serialize((day.to_string(), time.to_string(), temp, humidity, _press))?;
         wtr.flush()?;
         thread::sleep(time::Duration::from_secs(60));
-        clear_scrn();
+        clear::All();
     }
 }
