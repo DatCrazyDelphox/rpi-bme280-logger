@@ -9,17 +9,40 @@ use termion::clear;
 
 
 fn main() -> Result<(), Box<dyn Error>> {
+
     // First initialize the sensor and CSV writer
     let i2c_bus = I2cdev::new("/dev/i2c-1").unwrap();
     let mut bme280 = BME280::new_primary(i2c_bus, Delay);
     bme280.init().unwrap();
     let mut wtr = csv::Writer::from_path("sensor.csv")?;
 
-    // Write CSV Header
+    // Write CSV Header (also clears csv file if it exists)
     wtr.write_record(&["Dia", "Hora", "Temperatura", "Humidade", "Pressão"])?;
 
     // Clear screen
     clear::All();
+
+
+
+
+//    thread::spawn(|| {
+//        println!("{} - {}", day.white().bold(), time.white().bold());
+//        println!(
+//            "Temperatura = {}{}",
+//            temp.bright_green().bold(),
+//            "°C".bright_green().bold()
+//        );
+//        println!(
+//            "Humidade = {}{}",
+//            humidity.bright_green().bold(),
+//            "%".bright_green().bold()
+//        );
+//        println!(
+//            "Pressão = {} {}",
+//            _press.bright_green().bold(),
+//            "KPa".bright_green().bold()
+//        );
+//        });
 
 
 
