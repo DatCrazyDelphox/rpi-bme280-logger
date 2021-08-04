@@ -16,11 +16,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Clear screen
     print!("{}{}", clear::All, cursor::Goto(1, 1));
 
+    let mut trigger: u8 = 61;
     // Print sensor data to screen every second forever
     loop {
-        let mut time_count = 0;
-        time_count += 1;
-
         let measurements = bme280.measure().unwrap();
 
         let now = Local::now();
@@ -29,7 +27,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let day = format!("{:02}/{:02}/{:04}", now.day(), now.month(), now.year());
         let humidity = format!("{:.2}", measurements.humidity);
         let temp = format!("{:.2}", measurements.temperature);
-        let _press = format!("{:.2}", (measurements.pressure / 1000 as f32));
+        let _press = format!("{:.7}", (measurements.pressure / 1000 as f32));
 
 
         println!("{} - {}", day.white().bold(), time.white().bold());
@@ -46,13 +44,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!(
             "Pressão = {} {}",
             _press.bright_green().bold(),
-            "KPa".bright_green().bold()
+            "kPa".bright_green().bold()
         );
 
-        if time_count == 60 {
+        if trigger == 60 || trigger == 61 {
             wtr.serialize((day.to_string(), time.to_string(), temp, humidity, _press))?;
             wtr.flush()?;
+            println!("{}{}","Wrote to csv at ".white().bold(), time.bright_green().bold());
+            trigger = 0;
         }
+
+        trigger += 1;
+        println!("Trigger: {}", trigger);
 
         thread::sleep(time::Duration::from_secs(1));
         print!("{}{}", clear::All, cursor::Goto(1, 1));
