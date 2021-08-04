@@ -7,11 +7,13 @@ use std::{thread, time};
 use termion::{clear, cursor};
 
 // Main Variables
-const I2C: &str = "/dev/i2c-1";
-const FILEPATH: &str = "./sensor.csv";
-const INTERVAL: u16 = 60; // In seconds
+const I2C: &str = "/dev/i2c-1";        // Path to i2C bus
+const FILEPATH: &str = "./sensor.csv"; // Path to csv log file
+const INTERVAL: u16 = 1;               // In minutes
 
+// Main stuff
 fn main() -> Result<(), Box<dyn Error>> {
+
     // First initialize the sensor
     let mut bme280 = BME280::new_primary(I2cdev::new(I2C).unwrap(), Delay);
     bme280.init().unwrap();
@@ -21,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Clear screen
     print!("{}{}", clear::All, cursor::Goto(1, 1));
 
-    let mut trigger: u16 = INTERVAL + 1;
+    let mut trigger: u16 = (INTERVAL * 60) + 1;
     // Print sensor data to screen every second forever
     loop {
         let measurements = bme280.measure().unwrap();
