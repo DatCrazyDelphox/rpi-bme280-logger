@@ -68,7 +68,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         trigger += 1;
         println!("Trigger: {}", trigger);
-        println!("\nLast csv write: {}", lastwrt);
+        println!("{}{}", "\nLast csv write: ".white().bold(), lastwrt.bright_yellow().bold());
 
         thread::sleep(time::Duration::from_secs(1));
 
