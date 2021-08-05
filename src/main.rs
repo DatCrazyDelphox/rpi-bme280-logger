@@ -18,12 +18,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut bme280 = BME280::new_primary(I2cdev::new(I2C).unwrap(), Delay);
     bme280.init().unwrap();
     let mut wtr = csv::Writer::from_path(FILEPATH)?;
-    wtr.write_record(&["Dia", "Hora", "Temperatura", "Humidade", "Pressão"])?;
+    wtr.write_record(&["Day", "Hour", "Temp", "Hum", "Pressure"])?;
 
     // Clear screen
     print!("{}{}", clear::All, cursor::Goto(1, 1));
 
     let mut trigger: u16 = (INTERVAL * 60) + 1;
+    let mut lastwrt = String::from("Never");
     // Print sensor data to screen every second forever
     loop {
         let measurements = bme280.measure().unwrap();
@@ -62,10 +63,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                 time.bright_green().bold()
             );
             trigger = 0;
+            lastwrt = time;
         }
 
         trigger += 1;
         println!("Trigger: {}", trigger);
+        println!("\nLast csv write: {}", lastwrt);
 
         thread::sleep(time::Duration::from_secs(1));
 
