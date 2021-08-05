@@ -38,17 +38,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         println!("{} - {}", day.white().bold(), time.white().bold());
         println!(
-            "Temperatura = {}{}",
+            "Temperature = {}{}",
             temp.bright_green().bold(),
             "°C".bright_green().bold()
         );
         println!(
-            "Humidade = {}{}",
+            "Humidity = {}{}",
             humidity.bright_green().bold(),
             "%".bright_green().bold()
         );
         println!(
-            "Pressão = {} {}",
+            "Pressure = {} {}",
             _press.bright_green().bold(),
             "kPa".bright_green().bold()
         );
