@@ -1,1 +1,1 @@
-# rpi-bme280-logger
+# BME280 Logger for Raspberry Pi
