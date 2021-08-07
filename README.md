@@ -1,7 +1,8 @@
 # BME280 Logger for Raspberry Pi
 ## Instructions
 ### Compilation
-Just clone this repository and run ```cargo run```
+Just clone this repository and run ```cargo run``` inside of it
+
 Or download the precompiled binary in Releases
 
 ### Usage
