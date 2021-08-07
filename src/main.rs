@@ -7,23 +7,20 @@ use std::{thread, time};
 use termion::{clear, cursor};
 
 // Main Variables
-const I2C: &str = "/dev/i2c-1";        // Path to i2C bus
+const I2C: &str = "/dev/i2c-1"; // Path to i2C bus
 const FILEPATH: &str = "./sensor.csv"; // Path to csv log file
-const INTERVAL: u16 = 1;               // In minutes
+const INTERVAL: u16 = 1; // In minutes
 
 struct Info {
     day: String,
     hour: String,
     temp: String,
     hum: String,
-    press: String
+    press: String,
 }
-
 
 // Main stuff
 fn main() -> Result<(), Box<dyn Error>> {
-
-
     // First initialize the sensor
     let mut bme280 = BME280::new_primary(I2cdev::new(I2C).unwrap(), Delay);
     bme280.init().unwrap();
@@ -37,7 +34,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut lastwrt = String::from("Never");
     // Print sensor data to screen every second forever
     loop {
-        println!("{} - {}", poll().day.white().bold(), poll().hour.white().bold());
+        println!(
+            "{} - {}",
+            poll().day.white().bold(),
+            poll().hour.white().bold()
+        );
         println!(
             "Temperature = {}{}",
             poll().temp.bright_green().bold(),
@@ -55,7 +56,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         );
 
         if trigger == INTERVAL || trigger == INTERVAL + 1 {
-            wtr.serialize((poll().day, poll().hour, poll().temp, poll().hum, poll().press))?;
+            wtr.serialize((
+                poll().day,
+                poll().hour,
+                poll().temp,
+                poll().hum,
+                poll().press,
+            ))?;
             wtr.flush()?;
             println!(
                 "{}{}",
@@ -68,7 +75,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         trigger += 1;
         println!("Trigger: {}", trigger);
-        println!("{}{}", "\nLast csv write: ".white().bold(), lastwrt.bright_yellow().bold());
+        println!(
+            "{}{}",
+            "\nLast csv write: ".white().bold(),
+            lastwrt.bright_yellow().bold()
+        );
 
         thread::sleep(time::Duration::from_secs(1));
 
@@ -76,7 +87,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 }
 
-fn poll() -> Info{
+fn poll() -> Info {
     let mut bme280 = BME280::new_primary(I2cdev::new(I2C).unwrap(), Delay);
     let now = Local::now();
     let measurements = bme280.measure().unwrap();
@@ -90,8 +101,6 @@ fn poll() -> Info{
         hour: time,
         temp,
         hum,
-        press
+        press,
     };
 }
-
-
