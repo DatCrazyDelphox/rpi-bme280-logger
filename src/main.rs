@@ -11,8 +11,18 @@ const I2C: &str = "/dev/i2c-1";        // Path to i2C bus
 const FILEPATH: &str = "./sensor.csv"; // Path to csv log file
 const INTERVAL: u16 = 1;               // In minutes
 
+struct Info {
+    day: String,
+    hour: String,
+    temp: String,
+    hum: String,
+    press: String
+}
+
+
 // Main stuff
 fn main() -> Result<(), Box<dyn Error>> {
+
 
     // First initialize the sensor
     let mut bme280 = BME280::new_primary(I2cdev::new(I2C).unwrap(), Delay);
@@ -27,43 +37,33 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut lastwrt = String::from("Never");
     // Print sensor data to screen every second forever
     loop {
-        let measurements = bme280.measure().unwrap();
-
-        let now = Local::now();
-
-        let time = format!("{:02}:{:02}:{:02}", now.hour(), now.minute(), now.second());
-        let day = format!("{:02}/{:02}/{:04}", now.day(), now.month(), now.year());
-        let humidity = format!("{:.2}", measurements.humidity);
-        let temp = format!("{:.2}", measurements.temperature);
-        let _press = format!("{:.7}", (measurements.pressure / 1000 as f32));
-
-        println!("{} - {}", day.white().bold(), time.white().bold());
+        println!("{} - {}", poll().day.white().bold(), poll().hour.white().bold());
         println!(
             "Temperature = {}{}",
-            temp.bright_green().bold(),
+            poll().temp.bright_green().bold(),
             "°C".bright_green().bold()
         );
         println!(
             "Humidity = {}{}",
-            humidity.bright_green().bold(),
+            poll().hum.bright_green().bold(),
             "%".bright_green().bold()
         );
         println!(
             "Pressure = {} {}",
-            _press.bright_green().bold(),
+            poll().press.bright_green().bold(),
             "kPa".bright_green().bold()
         );
 
         if trigger == INTERVAL || trigger == INTERVAL + 1 {
-            wtr.serialize((day.to_string(), time.to_string(), temp, humidity, _press))?;
+            wtr.serialize((poll().day, poll().hour, poll().temp, poll().hum, poll().press))?;
             wtr.flush()?;
             println!(
                 "{}{}",
                 "Wrote to csv at ".white().bold(),
-                time.bright_green().bold()
+                poll().hour.bright_green().bold()
             );
             trigger = 0;
-            lastwrt = time;
+            lastwrt = poll().hour;
         }
 
         trigger += 1;
@@ -75,3 +75,23 @@ fn main() -> Result<(), Box<dyn Error>> {
         print!("{}{}", clear::All, cursor::Goto(1, 1));
     }
 }
+
+fn poll() -> Info{
+    let mut bme280 = BME280::new_primary(I2cdev::new(I2C).unwrap(), Delay);
+    let now = Local::now();
+    let measurements = bme280.measure().unwrap();
+    let time = format!("{:02}:{:02}:{:02}", now.hour(), now.minute(), now.second());
+    let day = format!("{:02}/{:02}/{:04}", now.day(), now.month(), now.year());
+    let hum = format!("{:.2}", measurements.humidity);
+    let temp = format!("{:.2}", measurements.temperature);
+    let press = format!("{:.7}", (measurements.pressure / 1000 as f32));
+    return Info {
+        day,
+        hour: time,
+        temp,
+        hum,
+        press
+    };
+}
+
+
