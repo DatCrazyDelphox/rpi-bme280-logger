@@ -1,5 +1,6 @@
 use bme280::BME280;
 use chrono::prelude::*;
+use clap::{App, Arg};
 use colored::*;
 use linux_embedded_hal::{Delay, I2cdev};
 use std::error::Error;
@@ -8,22 +9,46 @@ use termion::{clear, cursor};
 
 // Main Variables
 const I2C: &str = "/dev/i2c-1"; // Path to i2C bus
-const FILEPATH: &str = "./sensor.csv"; // Path to csv log file
-const INTERVAL: u16 = 1; // In minutes
 
 // Main stuff
 fn main() -> Result<(), Box<dyn Error>> {
+    let matches = App::new("RPi BME280 Logger")
+        .version("1.2.0")
+        .author("Ferrah Aiko Wolf <ferrahwolfeh@protonmail.com>")
+        .about("Logs data from a BME280 sensor")
+        .arg(
+            Arg::with_name("config")
+                .short("i")
+                .long("interval")
+                .value_name("Minutes")
+                .help("Set a custom polling interval in minutes")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("filename")
+                .help("Sets the output file to write sensor data")
+                .index(1),
+        )
+        .get_matches();
+
+    let interval: u16 = matches
+        .value_of("interval")
+        .unwrap_or("1")
+        .parse::<u16>()
+        .unwrap();
+
     // First initialize the sensor
     let mut bme280 = BME280::new_primary(I2cdev::new(I2C).unwrap(), Delay);
     bme280.init().unwrap();
-    let mut wtr = csv::Writer::from_path(FILEPATH)?;
+    let mut wtr = csv::Writer::from_path(matches.value_of("filename").unwrap_or("./sensor.csv"))?;
     wtr.write_record(&["Day", "Hour", "Temp", "Hum", "Pressure"])?;
 
     // Clear screen
     print!("{}{}", clear::All, cursor::Goto(1, 1));
 
-    let mut trigger: u16 = (INTERVAL * 60) + 1;
+    let mut trigger: u16 = (interval * 60) + 1;
     let mut lastwrt = String::from("Never");
+
     // Print sensor data to screen every second forever
     loop {
         let now = Local::now();
@@ -51,9 +76,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             press.bright_green().bold(),
             "kPa".bright_green().bold()
         );
-        
 
-        if trigger == (INTERVAL * 60) || trigger == (INTERVAL * 60) + 1 {
+        if trigger == (interval * 60) || trigger == (interval * 60) + 1 {
             println!(
                 "{}{}",
                 "Wrote to csv at ".white().bold(),
@@ -64,8 +88,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             trigger = 0;
             lastwrt = time;
         }
-        
-        println!("{} {}", (60 - trigger), "seconds to next write".white().bold());
+
+        println!(
+            "{} {}",
+            (60 - trigger),
+            "seconds to next write".white().bold()
+        );
         println!(
             "{}{}",
             "\nLast csv write: ".white().bold(),

@@ -1,6 +1,6 @@
 [package]
 name = "rpi-bme280-logger"
-version = "1.1.5"
+version = "1.2.0"
 authors = ["FerrahWolfeh"]
 edition = "2018"
 
@@ -14,3 +14,4 @@ colored = "2"
 csv = "1.1"
 serde = "1.0"
 termion = "1.5.6"
+clap = "2.33.3"
