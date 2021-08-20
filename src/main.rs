@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matches = App::new("RPi BME280 Logger")
         .version("1.2.0")
         .author("Ferrah Aiko Wolf <ferrahwolfeh@protonmail.com>")
-        .about("Logs data from a BME280 sensor")
+        .about("Logs data from a BME280 sensor connected to I2C Bus 1")
         .arg(
             Arg::with_name("config")
                 .short("i")
@@ -28,6 +28,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             Arg::with_name("filename")
                 .help("Sets the output file to write sensor data")
                 .index(1),
+        )
+        .arg(
+            Arg::with_name("svg-path")
+                .short("g")
+                .value_name("svgpath")
+                .help("Sets the output file to write the SVG graphs")
+                .takes_value(true),
         )
         .get_matches();
 
