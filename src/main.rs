@@ -29,13 +29,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .help("Sets the output file to write sensor data")
                 .index(1),
         )
-        .arg(
-            Arg::with_name("svg-path")
-                .short("g")
-                .value_name("svgpath")
-                .help("Sets the output file to write the SVG graphs")
-                .takes_value(true),
-        )
         .get_matches();
 
     let interval: u16 = matches
@@ -69,17 +62,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         println!("{} - {}", day.white().bold(), time.white().bold());
         println!(
-            "Temperature = {}{}",
+            "Temperature = {}{}
+            Humidity = {}{}
+            Pressure = {} {}",
             temp.bright_green().bold(),
-            "°C".bright_green().bold()
-        );
-        println!(
-            "Humidity = {}{}",
+            "°C".bright_green().bold(),
             hum.bright_green().bold(),
-            "%".bright_green().bold()
-        );
-        println!(
-            "Pressure = {} {}",
+            "%".bright_green().bold(),
             press.bright_green().bold(),
             "kPa".bright_green().bold()
         );
@@ -97,12 +86,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
 
         println!(
-            "{} {}",
+            "{} {}
+            {}{}",
             (60 - trigger),
-            "seconds to next write".white().bold()
-        );
-        println!(
-            "{}{}",
+            "seconds to next write".white().bold(),
             "\nLast csv write: ".white().bold(),
             lastwrt.bright_yellow().bold()
         );
