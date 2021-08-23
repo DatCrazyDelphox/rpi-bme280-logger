@@ -41,7 +41,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut bme280 = BME280::new_primary(I2cdev::new(I2C).unwrap(), Delay);
     bme280.init().unwrap();
     let mut wtr = csv::Writer::from_path(matches.value_of("filename").unwrap_or("./sensor.csv"))?;
-    wtr.write_record(&["Day", "Hour", "Temp", "Hum", "Pressure"])?;
+    wtr.write_record(&["Hour", "Temp", "Hum", "Pressure"])?;
 
     // Clear screen
     print!("{}{}", clear::All, cursor::Goto(1, 1));
@@ -55,12 +55,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let measurements = bme280.measure().unwrap();
         let time = format!("{:02}:{:02}:{:02}", now.hour(), now.minute(), now.second());
-        let day = format!("{:02}/{:02}/{:04}", now.day(), now.month(), now.year());
         let hum = format!("{:.2}", measurements.humidity);
         let temp = format!("{:.2}", measurements.temperature);
         let press = format!("{:.7}", (measurements.pressure / 1000 as f32));
 
-        println!("{} - {}", day.white().bold(), time.white().bold());
+        println!("{}", time.white().bold());
         println!(
             "Temperature = {}{}
             Humidity = {}{}
@@ -79,7 +78,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 "Wrote to csv at ".white().bold(),
                 time.bright_green().bold()
             );
-            wtr.serialize((day, &time, temp, hum, press))?;
+            wtr.serialize((&time, temp, hum, press))?;
             wtr.flush()?;
             trigger = 0;
             lastwrt = time;
