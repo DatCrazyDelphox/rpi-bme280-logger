@@ -7,9 +7,6 @@ use std::error::Error;
 use std::{thread, time};
 use termion::{clear, cursor};
 
-// Main Variables
-const I2C: &str = "/dev/i2c-1"; // Path to i2C bus
-
 // Main stuff
 fn main() -> Result<(), Box<dyn Error>> {
     let matches = App::new("RPi BME280 Logger")
@@ -26,8 +23,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         )
         .arg(
             Arg::with_name("filename")
-                .help("Sets the output file to write sensor data")
+                .help("Name of the output file to write sensor data")
                 .index(1),
+        )
+        .arg(
+            Arg::with_name("bus_num")
+                .help("I2C bus number (/dev/i2c-x)")
+                .short("n"),
         )
         .get_matches();
 
@@ -38,7 +40,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         .unwrap();
 
     // First initialize the sensor
-    let mut bme280 = BME280::new_primary(I2cdev::new(I2C).unwrap(), Delay);
+    let mut bme280 = BME280::new_primary(
+        I2cdev::new(format!(
+            "/dev/i2c-{}",
+            matches.value_of("bus_num").unwrap_or("1")
+        ))
+        .unwrap(),
+        Delay,
+    );
     bme280.init().unwrap();
     let mut wtr = csv::Writer::from_path(matches.value_of("filename").unwrap_or("./sensor.csv"))?;
     wtr.write_record(&["Hour", "Temp", "Hum", "Pressure"])?;
